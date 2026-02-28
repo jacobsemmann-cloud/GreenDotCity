@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Green Dot City</title>
+    <style>
+        :root { --green: #39FF14; --bg: #000000; --card: #1a1a1a; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: white; padding: 20px; margin: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; color: #666; margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
+        input, select, textarea { width: 100%; background: var(--card); border: 1px solid #333; color: white; padding: 12px; border-radius: 12px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; background: var(--green); border: none; padding: 15px; border-radius: 12px; font-weight: 900; font-size: 18px; color: black; margin-top: 10px; box-shadow: 0 4px 20px rgba(57, 255, 20, 0.3); }
+        .toggle-container { display: flex; align-items: center; justify-content: space-between; background: #111; padding: 12px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--green); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1 style="color: var(--green); margin: 0 0 5px 0; letter-spacing: -1px; font-size: 32px;">GREEN DOT CITY</h1>
+    <p style="color: #444; font-size: 12px; margin-bottom: 25px; font-weight: bold; letter-spacing: 2px;">PREMIUM TRACKER</p>
+
+    <div class="form-group">
+        <label>LEAGUE</label>
+        <select id="sport">
+            <option value="NFL">NFL</option><option value="NBA">NBA</option><option value="WNBA">WNBA</option>
+            <option value="NCAAF">NCAAF</option><option value="NCAAB">NCAAB</option><option value="MLB">MLB</option>
+            <option value="NHL">NHL</option><option value="ATP">ATP</option><option value="WTA">WTA</option>
+            <option value="eSports">eSports</option><option value="Golf">Golf</option><option value="MMA">MMA</option>
+            <option value="Soccer">Soccer</option><option value="Multi" selected>Multi</option>
+        </select>
+    </div>
+
+    <div class="toggle-container">
+        <span style="color: var(--green); font-weight: bold; font-size: 14px;">PARLAY MODE</span>
+        <input type="checkbox" id="parlayToggle" style="width: 25px; height: 25px;" onchange="toggleParlay()">
+    </div>
+
+    <div id="singleFields">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group"><label>TEAM 1</label><input type="text" id="team1" placeholder="Lakers"></div>
+            <div class="form-group"><label>TEAM 2</label><input type="text" id="team2" placeholder="Celtics"></div>
+        </div>
+    </div>
+
+    <div id="parlayFields" class="hidden">
+        <label>PARLAY LEGS</label>
+        <div class="form-group"><input type="text" class="p-team" placeholder="Leg 1"></div>
+        <div class="form-group"><input type="text" class="p-team" placeholder="Leg 2"></div>
+        <div class="form-group"><input type="text" class="p-team" placeholder="Leg 3"></div>
+        <div class="form-group"><input type="text" class="p-team" placeholder="Leg 4"></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="form-group"><label>ODDS (Dec)</label><input type="number" step="0.01" id="odds" placeholder="1.91"></div>
+        <div class="form-group"><label>STAKE ($)</label><input type="number" id="stake" placeholder="100"></div>
+    </div>
+
+    <button id="submitBtn" onclick="submitBet()">LOG TO THE CITY</button>
+
+    <div style="margin-top: 30px; border-radius: 12px; overflow: hidden; border: 1px solid #333;">
+        <iframe src="https://www.scorebat.com/embed/livescore/" frameborder="0" width="100%" height="400" style="background: #000;"></iframe>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyOi4_nHDfFMZ_KBI5-dEAWHmmjJPmIhtWE-Ie7UDPEHietlh7l1mItSzV-XEgcPxnz3g/exec"; 
+
+        function toggleParlay() {
+            const isParlay = document.getElementById('parlayToggle').checked;
+            document.getElementById('singleFields').classList.toggle('hidden', isParlay);
+            document.getElementById('parlayFields').classList.toggle('hidden', !isParlay);
+            if (isParlay) document.getElementById('sport').value = "Multi";
+        }
+
+        async function submitBet() {
+            const btn = document.getElementById('submitBtn');
+            const isParlay = document.getElementById('parlayToggle').checked;
+            btn.innerText = "SENDING...";
+            btn.disabled = true;
+
+            const payload = {
+                isParlay: isParlay,
+                sport: document.getElementById('sport').value,
+                team1: document.getElementById('team1').value,
+                team2: document.getElementById('team2').value,
+                parlayTeams: Array.from(document.querySelectorAll('.p-team')).map(i => i.value).filter(v => v !== ""),
+                odds: document.getElementById('odds').value,
+                stake: document.getElementById('stake').value
+            };
+
+            try {
+                await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                alert("Bet Logged!");
+                location.reload(); 
+            } catch (e) {
+                alert("Error! Check your connection.");
+                btn.disabled = false;
+                btn.innerText = "LOG TO THE CITY";
+            }
+        }
+    </script>
+</body>
+</html>
